@@ -423,7 +423,7 @@ let
         {
           path = nixDatabase;
           regex = ".*";
-          mode = "0755";
+          mode = "0777";
           uid = nixUid;
           gid = nixGid;
         }
