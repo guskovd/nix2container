@@ -1,7 +1,6 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  debug = false;
   l = pkgs.lib // builtins;
 
   nix2container-bin = pkgs.buildGoModule {
@@ -275,7 +274,6 @@ let
 
     layersJSON = pkgs.runCommandLocal "layers.json" {} ''
       mkdir $out
-      set -x
       ${nix2container-bin}/bin/nix2container ${subcommand} \
         $out/layers.json \
         ${closureGraph allDeps ignore} \
@@ -285,11 +283,8 @@ let
         ${historyFlag} \
         ${tarDirectory} \
         ${toString (map (l: l + "/layers.json") layers)}
-      set +x
     '';
-    nestedLayers = l.flatten (l.map (l: l.nestedLayers) layers) ++ layers;
-    out = l.traceIf debug ("buildLayer " + layersJSON + ": " + l.concatStringsSep " " nestedLayers) layersJSON;
-  in checked { inherit copyToRoot contents; } (out // {inherit nestedLayers;});
+  in checked { inherit copyToRoot contents; } layersJSON;
 
   # Create a nix database from all paths contained in the given closureGraphJson.
   # Also makes all these paths store roots to prevent them from being garbage collected.
@@ -389,13 +384,18 @@ let
       configFile = pkgs.writeText "config.json" (l.toJSON config);
       copyToRootList = l.toList (l.defaultTo [] (l.defaultTo contents copyToRoot));
 
-      nestedLayers = l.concatMap (l: l.nestedLayers) layers;
-      allLayers = nestedLayers ++ layers;
+      # Expand the given list of layers to include all their transitive layer dependencies.
+      layersWithNested = layers:
+        let layerWithNested = layer: [layer] ++ (l.concatMap layerWithNested (layer.layers or []));
+        in l.concatMap layerWithNested layers;
+      explodedLayers = layersWithNested layers;
+      ignore = [configFile] ++ explodedLayers;
 
-      nixDatabase = let
-        ignore = [configFile]++allLayers;
-        closureGraphForAllLayers = closureGraph ([configFile] ++ copyToRootList ++ allLayers) ignore;
-      in makeNixDatabase closureGraphForAllLayers;
+      closureGraphForAllLayers = closureGraph ([configFile] ++ copyToRootList ++ layers) ignore;
+      nixDatabase = makeNixDatabase closureGraphForAllLayers;
+      # This layer contains all config dependencies. We ignore the
+      # configFile because it is already part of the image, as a
+      # specific blob.
 
       perms' = perms ++ l.optional initializeNixDatabase
         {
@@ -418,7 +418,7 @@ let
       fromImageFlag = l.optionalString (fromImage != "") "--from-image ${fromImage}";
       archFlag = "--arch ${arch}";
       createdFlag = "--created ${created}";
-      layerPaths = l.concatMapStringsSep " " (l: l + "/layers.json") (allLayers ++ [customizationLayer]);
+      layerPaths = toString (map (l: l + "/layers.json") (layers ++ [customizationLayer]));
 
       imageName = l.toLower name;
       imageTag =
@@ -440,7 +440,6 @@ let
           copyTo = copyTo image;
         };
       } ''
-        set -x
         ${nix2container-bin}/bin/nix2container image \
         $out \
         ${fromImageFlag} \
@@ -448,10 +447,8 @@ let
         ${createdFlag} \
         ${configFile} \
         ${layerPaths}
-        set +x
       '';
-      out = l.traceIf debug ("buildImage ${image}: " + l.concatMapStringsSep " " toString nestedLayers) image;
-    in checked { inherit copyToRoot contents; } out;
+    in checked { inherit copyToRoot contents; } image;
 
     checked = { copyToRoot, contents }:
       l.warnIf (contents != null)
