@@ -17,7 +17,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/containers/image/v5/manifest"
+	"go.podman.io/image/v5/manifest"
 	"github.com/nlewo/nix2container/types"
 	godigest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
