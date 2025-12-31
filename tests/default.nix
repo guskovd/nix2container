@@ -6,7 +6,7 @@ let
     command ? "",
     grepFlags ? "",
     pattern,
-  }: pkgs.writeScriptBin "test-script" ''
+  }: pkgs.writeShellScriptBin "test-script" ''
     ${image.copyToPodman}/bin/copy-to-podman
     ${pkgs.podman}/bin/podman run ${image.imageName}:${image.imageTag} ${command} | ${pkgs.gnugrep}/bin/grep ${grepFlags} '${pattern}'
     ret=$?
@@ -150,6 +150,22 @@ let
         echo "Expected Created attribute to contain: ${timestamp}"
         echo ""
         echo "Actual Created attribute: $created"
+        echo ""
+        echo "Error: test failed"
+        exit $ret
+      fi
+    '';
+    # Non regression test for issue https://github.com/nlewo/nix2container/issues/186
+    duplicated = let
+      image = examples.duplicated;
+    in pkgs.writeShellScriptBin "test-script" ''
+      ${image.copyToPodman}/bin/copy-to-podman
+      length=$(${pkgs.podman}/bin/podman image inspect ${image.imageName}:${image.imageTag} | jq '.[0].RootFS.Layers | length')
+      if [[ $length -eq 2 ]]
+      then
+        echo "Test passed"
+      else
+        echo "Expected number of layers is 2 while the image contains $length layers"
         echo ""
         echo "Error: test failed"
         exit $ret

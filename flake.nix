@@ -33,5 +33,17 @@
           default = nix2container.nix2container-bin;
         }
       );
+      devShells = perSystem (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in {
+          default = pkgs.mkShell {
+            buildInputs = [
+              pkgs.go pkgs.godef pkgs.gopls
+              pkgs.golangci-lint
+            ];
+          };
+        }
+      );
     };
 }

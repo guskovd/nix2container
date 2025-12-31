@@ -16,4 +16,5 @@
   ownership = pkgs.callPackage ./ownership.nix { inherit nix2container; };
   created = pkgs.callPackage ./created.nix { inherit nix2container; };
   metadata = pkgs.callPackage ./metadata.nix { inherit nix2container; };
+  duplicated = pkgs.callPackage ./duplicated.nix { inherit nix2container; };
 }

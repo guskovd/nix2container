@@ -150,8 +150,21 @@ func image(outputFilename, imageConfigPath string, fromImageFilename string, lay
 		if err != nil {
 			return err
 		}
-		logrus.Infof("Adding %d layers from %s", len(layers), path)
-		image.Layers = append(image.Layers, layers...)
+		// We only add layers from the layer JSON file that are not already been added.
+		for _, l := range layers {
+			var alreadyExist bool
+			for _, imageLayer := range image.Layers {
+				if l.Digest == imageLayer.Digest {
+					alreadyExist = true
+					break
+				}
+			}
+			if !alreadyExist {
+				logrus.Infof("Adding layer %s from %s", l.Digest, path)
+				image.Layers = append(image.Layers, l)
+			}
+		}
+
 	}
 	res, err := json.MarshalIndent(image, "", "\t")
 	if err != nil {
