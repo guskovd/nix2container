@@ -368,3 +368,10 @@ in [this branch](https://github.com/nlewo/image/tree/nix).
 
 For more information, refer to [the Go
 documentation](https://pkg.go.dev/github.com/nlewo/nix2container).
+
+
+## Commercial support
+
+For commercial support (customizations, image optimizations and best
+practices guidance, bug fixes), please contact
+[nlewo](https://github.com/nlewo) at antoine@lewocorp.eu.
