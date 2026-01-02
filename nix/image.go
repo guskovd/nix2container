@@ -17,11 +17,11 @@ import (
 	"io"
 	"os"
 
-	"go.podman.io/image/v5/manifest"
 	"github.com/nlewo/nix2container/types"
 	godigest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sirupsen/logrus"
+	"go.podman.io/image/v5/manifest"
 )
 
 // GetConfigBlob returns the config blog of an image.
@@ -66,7 +66,7 @@ func GetBlob(image types.Image, digest godigest.Digest) (io.ReadCloser, int64, e
 		rc := nopCloser{bytes.NewReader(configBlob)}
 		return rc, int64(len(configBlob)), nil
 	}
-	return nil, 0, errors.New("No blob with specified digest found in image")
+	return nil, 0, errors.New("no blob with specified digest found in image")
 }
 
 func getV1Image(image types.Image) (imageV1 v1.Image, err error) {
@@ -104,7 +104,7 @@ func NewImageFromFile(filename string) (image types.Image, err error) {
 	if err != nil {
 		return image, err
 	}
-	defer file.Close()
+	defer file.Close() // nolint: errcheck
 	content, err := io.ReadAll(file)
 	if err != nil {
 		return image, err
@@ -126,7 +126,7 @@ func NewImageFromDir(directory string) (image types.Image, err error) {
 	if err != nil {
 		return image, err
 	}
-	defer manifestFile.Close()
+	defer manifestFile.Close() // nolint: errcheck
 	content, err := io.ReadAll(manifestFile)
 	if err != nil {
 		return image, err
@@ -170,7 +170,7 @@ func NewImageFromDir(directory string) (image types.Image, err error) {
 		case "application/vnd.oci.image.layer.v1.tar+zstd":
 			layer.MediaType = l.MediaType
 		default:
-			return image, fmt.Errorf("Unsupported media type: %q", l.MediaType)
+			return image, fmt.Errorf("unsupported media type: %q", l.MediaType)
 		}
 		image.Layers = append(image.Layers, layer)
 	}
@@ -234,7 +234,7 @@ func NewImageFromManifest(manifestFilename string, blobMapFilename string) (imag
 		case "application/vnd.oci.image.layer.v1.tar+zstd":
 			layer.MediaType = l.MediaType
 		default:
-			return image, fmt.Errorf("Unsupported media type: %q", l.MediaType)
+			return image, fmt.Errorf("unsupported media type: %q", l.MediaType)
 		}
 		image.Layers = append(image.Layers, layer)
 	}

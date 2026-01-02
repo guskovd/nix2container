@@ -2,11 +2,12 @@ package nix
 
 import (
 	"fmt"
-	"github.com/nlewo/nix2container/types"
 	"os"
 	"path/filepath"
 	"reflect"
 	"sort"
+
+	"github.com/nlewo/nix2container/types"
 )
 
 // On case insensitive FS (adfs on MacOS for instance), Nix adds a
@@ -69,20 +70,20 @@ func addFileToGraph(root *fileNode, path string, info *os.FileInfo, options *typ
 
 	if current.info != nil {
 		if (*current.info).Mode() != (*info).Mode() {
-			return fmt.Errorf("The file '%s' already exists in the graph with mode '%v' from '%s' while it is added again with mode '%v' by '%s'",
+			return fmt.Errorf("the file '%s' already exists in the graph with mode '%v' from '%s' while it is added again with mode '%v' by '%s'",
 				dstPath, (*current.info).Mode(), current.srcPath, (*info).Mode(), path)
 		}
 		// .Size() is only meaningful for regular files
 		// See https://pkg.go.dev/io/fs#FileInfo
 		if (*current.info).Mode().IsRegular() && (*current.info).Size() != (*info).Size() {
-			return fmt.Errorf("The file '%s' already exists in the graph with size '%d' from '%s' while it is added again with size '%d' by '%s'",
+			return fmt.Errorf("the file '%s' already exists in the graph with size '%d' from '%s' while it is added again with size '%d' by '%s'",
 				dstPath, (*current.info).Size(), current.srcPath, (*info).Size(), path)
 		}
 	}
 	current.info = info
 
 	if current.options != nil && !reflect.DeepEqual(current.options.Perms, options.Perms) {
-		return fmt.Errorf("The file '%s' already exists in the tar with perms %#v but is overridden with perms %#v",
+		return fmt.Errorf("the file '%s' already exists in the tar with perms %#v but is overridden with perms %#v",
 			dstPath, current.options.Perms, options.Perms)
 	}
 	current.options = options

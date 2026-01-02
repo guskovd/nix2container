@@ -90,7 +90,7 @@ func NewLayersFromFile(filename string) ([]Layer, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer file.Close() // nolint: errcheck
 	content, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err

@@ -19,9 +19,9 @@ func TarPathsWrite(paths types.Paths, destinationDirectory string) (string, dige
 	if err != nil {
 		return "", "", 0, err
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 	reader := TarPaths(paths)
-	defer reader.Close()
+	defer reader.Close() // nolint: errcheck
 
 	r := io.TeeReader(reader, f)
 
@@ -42,7 +42,7 @@ func TarPathsWrite(paths types.Paths, destinationDirectory string) (string, dige
 
 func TarPathsSum(paths types.Paths) (digest.Digest, int64, error) {
 	reader := TarPaths(paths)
-	defer reader.Close()
+	defer reader.Close() // nolint: errcheck
 
 	digester := digest.Canonical.Digester()
 	size, err := io.Copy(digester.Hash(), reader)
@@ -68,7 +68,7 @@ func createDirectory(tw *tar.Writer, path string) error {
 	hdr.ModTime = time.Date(1970, 01, 01, 0, 0, 1, 0, time.UTC)
 
 	if err := tw.WriteHeader(hdr); err != nil {
-		return fmt.Errorf("Could not write hdr '%#v', got error '%s'", hdr, err.Error())
+		return fmt.Errorf("could not write hdr '%#v', got error '%s'", hdr, err.Error())
 	}
 	return nil
 }
@@ -131,18 +131,18 @@ func appendFileToTar(tw *tar.Writer, srcPath, dstPath string, info os.FileInfo, 
 	hdr.ChangeTime = time.Date(1970, 01, 01, 0, 0, 0, 0, time.UTC)
 
 	if err := tw.WriteHeader(hdr); err != nil {
-		return fmt.Errorf("Could not write hdr '%#v', got error '%s'", hdr, err.Error())
+		return fmt.Errorf("could not write hdr '%#v', got error '%s'", hdr, err.Error())
 	}
 	if link == "" {
 		file, err := os.Open(srcPath)
 		if err != nil {
-			return fmt.Errorf("Could not open file '%s', got error '%s'", srcPath, err.Error())
+			return fmt.Errorf("could not open file '%s', got error '%s'", srcPath, err.Error())
 		}
-		defer file.Close()
+		defer file.Close() // nolint: errcheck
 		if !info.IsDir() {
 			_, err = io.Copy(tw, file)
 			if err != nil {
-				return fmt.Errorf("Could not copy the file '%s' data to the tarball, got error '%s'", srcPath, err.Error())
+				return fmt.Errorf("could not copy the file '%s' data to the tarball, got error '%s'", srcPath, err.Error())
 			}
 		}
 	}
@@ -157,7 +157,7 @@ func TarPaths(paths types.Paths) io.ReadCloser {
 	graph := initGraph()
 
 	go func() {
-		defer w.Close()
+		defer w.Close() // nolint: errcheck
 		// First, we build a graph representing all files that
 		// has to be added to the layer. This graph allows to
 		// transform the file tree without having to write
@@ -166,7 +166,7 @@ func TarPaths(paths types.Paths) io.ReadCloser {
 			options := path.Options
 			err := filepath.Walk(path.Path, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
-					return fmt.Errorf("Failed accessing path %q: %v", path, err)
+					return fmt.Errorf("failed accessing path %q: %v", path, err)
 				}
 				logrus.Debugf("Walking filesystem: %s", path)
 				return addFileToGraph(graph, path, &info, options)
