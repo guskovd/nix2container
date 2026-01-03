@@ -1,11 +1,12 @@
 package nix
 
 import (
+	"reflect"
+	"testing"
+
 	digest "github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
-	"reflect"
-	"testing"
 
 	"github.com/nlewo/nix2container/types"
 )
@@ -47,7 +48,7 @@ func TestGetV1Image(t *testing.T) {
 
 	v1Image, err := getV1Image(image)
 	expected := v1.Image{
-		OS: "linux",
+		Platform: v1.Platform{OS: "linux"},
 		RootFS: v1.RootFS{
 			DiffIDs: []digest.Digest{
 				"sha256:adf74a52f9e1bcd7dab77193455fa06743b979cf5955148010e5becedba4f72d"},

@@ -21,7 +21,7 @@ let
         p == "default.nix"
       );
     };
-    vendorHash = "sha256-/j4ZHOwU5Xi8CE/fHha+2iZhsLd/y2ovzVhvg8HDV78=";
+    vendorHash = "sha256-KPJSt2QTcyIgC6S/ASuc1xSEIXrPDFMnd+5MhCQqia4=";
     ldflags = l.optional pkgs.stdenv.isDarwin
       "-X github.com/nlewo/nix2container/nix.useNixCaseHack=true";
   };
@@ -45,19 +45,17 @@ let
         '';
       });
       patch = fetchgitpatch {
-        url = "https://github.com/nlewo/image/commit/c2254c998433cf02af60bf0292042bd80b96a77e.patch";
-        sha256 = "sha256-6CUjz46xD3ORgwrHwdIlSu6JUj7WLS6BOSyRGNnALHY=";
+        url = "https://github.com/nlewo/container-libs/commit/21b053ac62f3137de42585611953e923577d0e10.patch";
+        sha256 = "sha256-pfwQh7FKWHY/xVAGMSvnjMOmkpMo9NG2HFZqhqZ1VN0=";
       };
     in ''
+      cat ${patch}
       mkdir -p vendor/github.com/nlewo/nix2container/
       cp -r ${nix2container-bin.src}/* vendor/github.com/nlewo/nix2container/
-      cd vendor/github.com/containers/image/v5
+      cd vendor/go.podman.io/image/v5
       mkdir nix/
       touch nix/transport.go
-      # The patch for alltransports.go does not apply cleanly to skopeo > 1.14,
-      # filter the patch and insert the import manually here instead.
-      filterdiff -x '*/alltransports.go' ${patch} | patch -p1
-      sed -i '\#_ "github.com/containers/image/v5/tarball"#a _ "github.com/containers/image/v5/nix"' transports/alltransports/alltransports.go
+      cat ${patch} | patch -p2
       cd -
 
       # Go checks packages in the vendor directory are declared in the modules.txt file.
@@ -65,7 +63,7 @@ let
       echo '## explicit; go 1.13' >> vendor/modules.txt
       echo github.com/nlewo/nix2container/nix >> vendor/modules.txt
       echo github.com/nlewo/nix2container/types >> vendor/modules.txt
-      echo github.com/containers/image/v5/nix >> vendor/modules.txt
+      echo go.podman.io/image/v5/nix >> vendor/modules.txt
       # All packages declared in the modules.txt file must also be required by the go.mod file.
       echo 'require (' >> go.mod
       echo '  github.com/nlewo/nix2container v1.0.0' >> go.mod

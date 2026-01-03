@@ -46,7 +46,7 @@ nix2container.buildImage {
     (pkgs.buildEnv {
       name = "root";
       paths = [ pkgs.coreutils pkgs.nix ];
-      pathsToLink = "/bin";
+      pathsToLink = ["/bin"];
     })
     mkUser
   ];

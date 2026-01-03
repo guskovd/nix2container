@@ -8,7 +8,7 @@ nix2container.buildImage {
     (pkgs.buildEnv {
       name = "root";
       paths = [ pkgs.coreutils pkgs.nix pkgs.bash ];
-      pathsToLink = "/bin";
+      pathsToLink = ["/bin"];
     })
   ];
   config = {
