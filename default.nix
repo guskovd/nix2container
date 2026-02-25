@@ -24,6 +24,10 @@ let
     vendorHash = "sha256-KPJSt2QTcyIgC6S/ASuc1xSEIXrPDFMnd+5MhCQqia4=";
     ldflags = l.optional pkgs.stdenv.isDarwin
       "-X github.com/nlewo/nix2container/nix.useNixCaseHack=true";
+
+    fixupPhase = ''
+      ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/nix2container
+    '';
   };
 
   skopeo-nix2container = pkgs.buildPackages.pkgsStatic.skopeo.overrideAttrs (old: {
