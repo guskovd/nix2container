@@ -97,17 +97,18 @@ let
 
   });
   
-  jq = pkgs.buildPackages.pkgsStatic.stdenvNoCC.mkDerivation {
-    name = "jq";
-    version = pkgs.buildPackages.pkgsStatic.jq.version;
-    src = pkgs.buildPackages.pkgsStatic.jq;
+  # jq = pkgs.buildPackages.pkgsStatic.stdenvNoCC.mkDerivation {
+  #   name = "jq";
+  #   version = pkgs.buildPackages.pkgsStatic.jq.version;
+  #   src = pkgs.buildPackages.pkgsStatic.jq;
   
-    installPhase = ''
-      mkdir -p $out/bin
-      cp bin/jq $out/bin
-      ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
-    '';
-  };
+  #   installPhase = ''
+  #     mkdir -p $out/bin
+  #     cp bin/jq $out/bin
+  #     ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
+  #   '';
+  # };
+  pkgs.jq;
 
   writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
     inherit name text;
