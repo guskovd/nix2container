@@ -97,7 +97,7 @@ let
 
   });
   
-  jq = pkgs.pkgsStatic.jq.overrideAttrs {
+  jq = pkgs.buildPackages.pkgsStatic.jq.overrideAttrs {
     fixupPhase = ''
       ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
     '';
