@@ -85,7 +85,7 @@ let
     '';
 
     outputs = [
-    "out"
+      "out"
     ];
 
     fixupPhase = ''
