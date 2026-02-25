@@ -99,7 +99,7 @@ let
 
   writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
     inherit name text;
-    runtimeInputs = [ pkgs.jq skopeo-nix2container ];
+    runtimeInputs = [ pkgs.pkgsStatic.jq skopeo-nix2container ];
     excludeShellChecks = [ "SC2068" ];
   };
 
@@ -349,7 +349,7 @@ let
     pkgs.runCommand "closure-graph.json" {
       __structuredAttrs = true;
       exportReferencesGraph.graph = paths;
-      nativeBuildInputs = [ pkgs.jq ];
+      nativeBuildInputs = [ pkgs.pkgsStatic.jq ];
       outputChecks.out.disallowedReferences = l.toList (l.defaultTo [] ignore);
     } ''
       filter='select(.path | inside("${toString ignore}") | not)'
