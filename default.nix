@@ -97,22 +97,9 @@ let
 
   });
   
-  # jq = pkgs.buildPackages.pkgsStatic.stdenvNoCC.mkDerivation {
-  #   name = "jq";
-  #   version = pkgs.buildPackages.pkgsStatic.jq.version;
-  #   src = pkgs.buildPackages.pkgsStatic.jq;
-  
-  #   installPhase = ''
-  #     mkdir -p $out/bin
-  #     cp bin/jq $out/bin
-  #     ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
-  #   '';
-  # };
-  jq = pkgs.jq;
-
-  writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
+  writeSkopeoApplication = name: text: pkgs.writeShellApplication {
     inherit name text;
-    runtimeInputs = [ jq skopeo-nix2container ];
+    runtimeInputs = [ pkgs.jq skopeo-nix2container ];
     excludeShellChecks = [ "SC2068" ];
   };
 
@@ -166,7 +153,7 @@ let
     }: let
       sourceURL = "docker://${imageName}@${imageDigest}";
       authFile = "/etc/skopeo/auth.json";
-      dir = pkgs.buildPackages.pkgsStatic.runCommand name
+      dir = pkgs.runCommand name
       {
         inherit imageDigest;
         impureEnvVars = l.fetchers.proxyImpureEnvVars;
@@ -188,7 +175,7 @@ let
           --src-tls-verify=${l.boolToString tlsVerify} \
           $authFlag
       '';
-    in pkgs.buildPackages.pkgsStatic.runCommand "nix2container-${imageName}.json" {} ''
+    in pkgs.runCommand "nix2container-${imageName}.json" {} ''
       ${nix2container-bin}/bin/nix2container image-from-dir $out ${dir}
     '';
 
@@ -207,7 +194,7 @@ let
       manifest = l.importJSON imageManifest;
 
       buildImageBlob = digest:
-        pkgs.buildPackages.pkgsStatic.runCommand (l.removePrefix "sha256:" digest) {
+        pkgs.runCommand (l.removePrefix "sha256:" digest) {
           impureEnvVars = l.fetchers.proxyImpureEnvVars;
           nativeBuildInputs = with pkgs; [ cacert skopeo ];
           outputHash = digest;
@@ -222,7 +209,7 @@ let
 
       # Write the blob map out to a JSON file for the GO executable to consume.
       blobMap = l.listToAttrs (map (drv: { name = drv.name; value = drv; }) (layerBlobs ++ [configBlob]));
-      blobMapFile = pkgs.buildPackages.pkgsStatic.writeText "${imageName}-blobs.json" (l.toJSON blobMap);
+      blobMapFile = pkgs.writeText "${imageName}-blobs.json" (l.toJSON blobMap);
 
       # Convenience scripts for manifest-updating.
       getManifest = writeSkopeoApplication "get-manifest" ''
@@ -239,7 +226,7 @@ let
         fi
       '';
 
-    in pkgs.buildPackages.pkgsStatic.runCommand "nix2container-${imageName}.json" {
+    in pkgs.runCommand "nix2container-${imageName}.json" {
       passthru = { inherit getManifest; };
     } ''
       ${nix2container-bin}/bin/nix2container image-from-manifest $out ${imageManifest} ${blobMapFile}
@@ -298,19 +285,19 @@ let
 	    repl = "";
     }) copyToRootList;
 
-    rewritesFile = pkgs.buildPackages.pkgsStatic.writeText "rewrites.json" (l.toJSON rewrites);
+    rewritesFile = pkgs.writeText "rewrites.json" (l.toJSON rewrites);
     rewritesFlag = "--rewrites ${rewritesFile}";
 
-    permsFile = pkgs.buildPackages.pkgsStatic.writeText "perms.json" (l.toJSON perms);
+    permsFile = pkgs.writeText "perms.json" (l.toJSON perms);
     permsFlag = l.optionalString (perms != []) "--perms ${permsFile}";
 
-    historyFile = pkgs.buildPackages.pkgsStatic.writeText "history.json" (l.toJSON metadata);
+    historyFile = pkgs.writeText "history.json" (l.toJSON metadata);
     historyFlag = l.optionalString (metadata != {}) "--history ${historyFile}";
 
     allDeps = deps ++ copyToRootList;
     tarDirectory = l.optionalString (!reproducible) "--tar-directory $out";
 
-    layersJSON = pkgs.buildPackages.pkgsStatic.runCommandLocal "layers.json" {} ''
+    layersJSON = pkgs.runCommandLocal "layers.json" {} ''
       mkdir $out
       set -x
       ${nix2container-bin}/bin/nix2container ${subcommand} \
@@ -332,8 +319,8 @@ let
   # Also makes all these paths store roots to prevent them from being garbage collected.
   makeNixDatabase = closureGraphJson:
     assert l.isDerivation closureGraphJson;
-    pkgs.buildPackages.pkgsStatic.runCommand "nix-database" {
-      nativeBuildInputs = with pkgs; [ jq nix sqlite ];
+    pkgs.runCommand "nix-database" {
+      nativeBuildInputs = with pkgs; [ pkgs.jq nix sqlite ];
     } ''
       echo "Generating the nix database from ${closureGraphJson}..."
 
@@ -359,10 +346,10 @@ let
 
   # Write the references of `path' to a file but do not include `ignore' itself if non-null.
   closureGraph = paths: ignore:
-    pkgs.buildPackages.pkgsStatic.runCommand "closure-graph.json" {
+    pkgs.runCommand "closure-graph.json" {
       __structuredAttrs = true;
       exportReferencesGraph.graph = paths;
-      nativeBuildInputs = [ jq ];
+      nativeBuildInputs = [ pkgs.jq ];
       outputChecks.out.disallowedReferences = l.toList (l.defaultTo [] ignore);
     } ''
       filter='select(.path | inside("${toString ignore}") | not)'
@@ -423,7 +410,7 @@ let
     meta ? {},
   }:
     let
-      configFile = pkgs.buildPackages.pkgsStatic.writeText "config.json" (l.toJSON config);
+      configFile = pkgs.writeText "config.json" (l.toJSON config);
       copyToRootList = l.toList (l.defaultTo [] (l.defaultTo contents copyToRoot));
 
       nestedLayers = l.concatMap (l: l.nestedLayers) layers;
@@ -462,7 +449,7 @@ let
         let hash = l.head (l.splitString "-" (baseNameOf image.outPath));
         in l.defaultTo hash tag;
 
-      image = pkgs.buildPackages.pkgsStatic.runCommandLocal "image-${baseNameOf name}.json" {
+      image = pkgs.runCommandLocal "image-${baseNameOf name}.json" {
         inherit meta;
         passthru = {
           inherit fromImage imageName imageTag;
