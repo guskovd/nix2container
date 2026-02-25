@@ -108,7 +108,7 @@ let
   #     ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
   #   '';
   # };
-  pkgs.jq;
+  jq = pkgs.jq;
 
   writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
     inherit name text;
