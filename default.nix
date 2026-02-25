@@ -4,7 +4,7 @@ let
   debug = false;
   l = pkgs.lib // builtins;
 
-  nix2container-bin = pkgs.buildGoModule {
+  nix2container-bin = pkgs.buildPackages.pkgsStatic.buildGoModule {
     pname = "nix2container";
     version = "1.0.0";
     src = l.cleanSourceWith {
@@ -79,9 +79,16 @@ let
       echo '  github.com/nlewo/nix2container v1.0.0' >> go.mod
       echo ')' >> go.mod
     '';
+
+    installPhase = old.installPhase + ''
+      ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/.skopeo-wrapped
+      rm $out/bin/skopeo
+      mv $out/bin/.skopeo-wrapped $out/bin/skopeo
+    '';
+
   });
 
-  writeSkopeoApplication = name: text: pkgs.writeShellApplication {
+  writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
     inherit name text;
     runtimeInputs = [ pkgs.jq skopeo-nix2container ];
     excludeShellChecks = [ "SC2068" ];
