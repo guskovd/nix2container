@@ -4,7 +4,7 @@ let
   debug = false;
   l = pkgs.lib // builtins;
 
-  nix2container-bin = pkgs.buildPackages.pkgsStatic.buildGoModule {
+  nix2container-bin = pkgs.buildPackages.buildGoModule {
     pname = "nix2container";
     version = "1.0.0";
     src = l.cleanSourceWith {
@@ -30,7 +30,7 @@ let
     '';
   };
 
-  skopeo-nix2container = pkgs.buildPackages.pkgsStatic.skopeo.overrideAttrs (old: {
+  skopeo-nix2container = pkgs.buildPackages.skopeo.overrideAttrs (old: {
 
     version = "1.22.0";
 
