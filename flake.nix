@@ -1,7 +1,7 @@
 {
   description = "nix2container: build container image with Nix";
 
-  inputs.nixpkgs.url = "https://releases.nixos.org/nixos/25.11/nixos-25.11.6495.e764fc9a4058/nixexprs.tar.xz";
+  inputs.nixpkgs.url = "https://releases.nixos.org/nixos/25.11-small/nixos-25.11.6107.7e8d4997c66b/nixexprs.tar.xz";
 
   outputs = { self, nixpkgs }:
     let
