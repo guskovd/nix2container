@@ -26,7 +26,7 @@ let
       "-X github.com/nlewo/nix2container/nix.useNixCaseHack=true";
   };
 
-  skopeo-nix2container = pkgs.skopeo.overrideAttrs (old: {
+  skopeo-nix2container = pkgs.pkgsStatic.skopeo.overrideAttrs (old: {
     EXTRA_LDFLAGS = l.optionalString pkgs.stdenv.isDarwin "-X github.com/nlewo/nix2container/nix.useNixCaseHack=true";
     nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.patchutils ];
     preBuild = let
@@ -52,11 +52,11 @@ let
       cat ${patch}
       mkdir -p vendor/github.com/nlewo/nix2container/
       cp -r ${nix2container-bin.src}/* vendor/github.com/nlewo/nix2container/
-      cd vendor/go.podman.io/image/v5
-      mkdir nix/
-      touch nix/transport.go
-      cat ${patch} | patch -p2
-      cd -
+      # cd vendor/go.podman.io/image/v5
+      # mkdir nix/
+      # touch nix/transport.go
+      # cat ${patch} | patch -p2
+      # cd -
 
       # Go checks packages in the vendor directory are declared in the modules.txt file.
       echo '# github.com/nlewo/nix2container v1.0.0' >> vendor/modules.txt
