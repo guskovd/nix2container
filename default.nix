@@ -105,7 +105,7 @@ let
     installPhase = ''
       mkdir -p $out/bin
       cp bin/jq $out/bin
-      ${buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
+      ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
     '';
   };
 
