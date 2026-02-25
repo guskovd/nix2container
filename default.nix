@@ -80,10 +80,15 @@ let
       echo ')' >> go.mod
     '';
 
-    installPhase = old.installPhase + ''
+    outputs = [
+    "out"
+    ];
+
+    fixupPhase = ''
       ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/.skopeo-wrapped
       rm $out/bin/skopeo
       mv $out/bin/.skopeo-wrapped $out/bin/skopeo
+      rm -rf $out/{etc,nix-support,share}
     '';
 
   });
