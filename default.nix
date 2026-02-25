@@ -297,7 +297,7 @@ let
     allDeps = deps ++ copyToRootList;
     tarDirectory = l.optionalString (!reproducible) "--tar-directory $out";
 
-    layersJSON = pkgs.runCommandLocal "layers.json" {} ''
+    layersJSON = pkgs.runCommand "layers.json" {} ''
       mkdir $out
       set -x
       ${nix2container-bin}/bin/nix2container ${subcommand} \
@@ -449,7 +449,7 @@ let
         let hash = l.head (l.splitString "-" (baseNameOf image.outPath));
         in l.defaultTo hash tag;
 
-      image = pkgs.runCommandLocal "image-${baseNameOf name}.json" {
+      image = pkgs.runCommand "image-${baseNameOf name}.json" {
         inherit meta;
         passthru = {
           inherit fromImage imageName imageTag;
