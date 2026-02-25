@@ -96,10 +96,16 @@ let
     '';
 
   });
+  
+  jq = pkgs.pkgsStatic.jq.overrideAttrs {
+    fixupPhase = ''
+      ${pkgs.buildPackages.nukeReferences}/bin/nuke-refs $out/bin/jq
+    '';
+  };
 
   writeSkopeoApplication = name: text: pkgs.buildPackages.pkgsStatic.writeShellApplication {
     inherit name text;
-    runtimeInputs = [ pkgs.pkgsStatic.jq skopeo-nix2container ];
+    runtimeInputs = [ jq skopeo-nix2container ];
     excludeShellChecks = [ "SC2068" ];
   };
 
