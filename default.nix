@@ -52,11 +52,12 @@ let
       cat ${patch}
       mkdir -p vendor/github.com/nlewo/nix2container/
       cp -r ${nix2container-bin.src}/* vendor/github.com/nlewo/nix2container/
-      # cd vendor/go.podman.io/image/v5
-      # mkdir nix/
-      # touch nix/transport.go
+      mkdir -p vendor/go.podman.io/image/v5
+      cd vendor/go.podman.io/image/v5
+      mkdir nix/
+      touch nix/transport.go
       # cat ${patch} | patch -p2
-      # cd -
+      cd -
 
       # Go checks packages in the vendor directory are declared in the modules.txt file.
       echo '# github.com/nlewo/nix2container v1.0.0' >> vendor/modules.txt
